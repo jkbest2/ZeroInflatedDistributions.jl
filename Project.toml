@@ -1,0 +1,7 @@
+name = "ZeroInflatedLikelihoods"
+uuid = "799edfa2-b1a3-4e1c-96c0-d1ebdffd3208"
+authors = ["John Best <jkbest@gmail.com> and contributors"]
+version = "0.1.0"
+
+[compat]
+julia = "1.2"
