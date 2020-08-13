@@ -158,7 +158,7 @@ end
 
 function ZeroInflatedLikelihood(
     zil::AbstractZeroInflatedLink, posdist::Type{LogNormal}, p1, p2, disp;
-    biascorrect = true) where {Tp <:Type{LogNormal},T}
+    biascorrect = true)
     p = encprob(zil, p1, p2)
     if biascorrect
         bias = disp^2 / 2
