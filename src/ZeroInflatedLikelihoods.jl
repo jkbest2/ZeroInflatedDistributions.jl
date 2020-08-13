@@ -79,6 +79,11 @@ struct PoissonLink{T} <: AbstractZeroInflatedLink
         new{T}(offset)
     end
 end
+function PoissonLink()
+    # Default to integer offset so that it doesn't inadvertantly convert e.g.
+    # Float32 to Float64
+    PoissonLink(one(Int))
+end
 
 
 function encprob(pl::PoissonLink, logn)
