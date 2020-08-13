@@ -74,7 +74,7 @@ with mean exp(n) and each group has expected weight exp(w).
 struct PoissonLink{T} <: AbstractZeroInflatedLink
     offset::T
 
-    function PoissonLink(offset)
+    function PoissonLink(offset::T) where T
         offset > 0 || throw(DomainError("offset must be positive"))
         new{T}(offset)
     end
@@ -87,7 +87,7 @@ end
 
 
 function encprob(pl::PoissonLink, logn)
-    cdf(Poisson(pl.offset * exp(logn)), 0)
+    ccdf(Poisson(pl.offset * exp(logn)), 0)
 end
 function encprob(pl::PoissonLink, logn, logw)
     encprob(pl, logn)
@@ -109,9 +109,9 @@ function encprob(il::IdentityLink, proc1)
     proc1
 end
 encprob(il::IdentityLink, proc1, proc2) = encprob(il, proc1)
-posrate(il::IdentityLink, proc2::T; bias = zero(T)) where T = proc2
+posrate(il::IdentityLink, proc2::T; bias = zero(T)) where T = proc2 - bias
 function posrate(il::IdentityLink, proc1::T, proc2::T; bias = zero(T)) where T
-    posrate(il, proc2)
+    posrate(il, proc2; bias)
 end
 
 abstract type AbstractZeroInflatedLikelihood end
