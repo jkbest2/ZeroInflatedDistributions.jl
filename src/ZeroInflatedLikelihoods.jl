@@ -163,18 +163,17 @@ function ZeroInflatedLikelihood(
     ZeroInflatedLikelihood(Bernoulli(p), posdist(alpha, beta))
 end
 
-"""
-μ = β / (α - 1) for α > 1
-σ² = β² / [(α - 1)²(α - 2)] for α > 2
-β = μ(α - 1)
-σ² = μ² / (α - 2)
-α = μ² / σ² + 2
-β = μ(μ² / σ² + 1)
-β = μ³ / σ² + μ
-"""
 function ZeroInflatedLikelihood(
     zil::AbstractZeroInflatedLink, posdist::Type{InverseGamma}, p1, p2, disp)
     p = encprob(zil, p1, p2)
+    # From mean and standard deviation to alpha and beta:
+    # μ = β / (α - 1) for α > 1
+    # σ² = β² / [(α - 1)²(α - 2)] for α > 2
+    # β = μ(α - 1)
+    # σ² = μ² / (α - 2)
+    # α = μ² / σ² + 2
+    # β = μ(μ² / σ² + 1)
+    # β = μ³ / σ² + μ
     mu = posrate(zil, p1, p2)
     alpha = (mu / disp)^2 + 2
     beta = mu * (alpha - 1)
