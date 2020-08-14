@@ -1,7 +1,7 @@
 name = "ZeroInflatedLikelihoods"
 uuid = "799edfa2-b1a3-4e1c-96c0-d1ebdffd3208"
 authors = ["John Best <jkbest@gmail.com> and contributors"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
@@ -10,3 +10,5 @@ StatsFuns = "4c63d2b9-4356-54db-8cca-17b64c39e42c"
 
 [compat]
 julia = "1.5"
+Distributions = "0.23"
+StatsFuns = "0.9"
