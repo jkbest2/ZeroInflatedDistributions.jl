@@ -13,8 +13,6 @@ export AbstractZeroInflatedLink,
     ZeroInflatedLikelihood
 
 abstract type AbstractZeroInflatedLink end
-# Bias is not stored in any of the link structs because it usualy depends on the
-# observation likelihood and its parameters (e.g. σ² / 2 for log-normal).
 
 """
     encprob(link::AbstractZeroInflatedLink, proc1, proc2)
@@ -26,13 +24,11 @@ argument.
 function encprob end
 
 """
-    posrate(link::AbstractZeroInflatedLink, proc1, proc2; bias = zero(T))
+    posrate(link::AbstractZeroInflatedLink, proc1, proc2)
 
 Expected positive observation conditional on an encounter given linear
 predictors proc1 and proc2. Depending on the link, proc1 may be dropped as an
-argument. The bias keyword argument is *subtracted* from the calculated value.
-This is useful e.g. when modeling the mean rather than median of log-normal
-positive observations.
+argument.
 """
 function posrate end
 
@@ -44,15 +40,13 @@ A link function where for observation y modeled by linear predictors p₁ and p�
 p(y > 0) = logit⁻¹(p₁)
 
 𝔼[y ∣ y > 0] = exp(p₂) - b
-
-where b is an optional bias term.
 """
 struct LogitLogLink <: AbstractZeroInflatedLink end
 
 encprob(lll::LogitLogLink, proc1) = logistic(proc1)
 encprob(lll::LogitLogLink, proc1, proc2) = encprob(lll, proc1)
-posrate(lll::LogitLogLink, proc2::T; bias = zero{T}) where T = exp(proc2) - bias
-posrate(lll::LogitLogLink, proc1::T, proc2::T; bias = zero(T)) where T = posrate(lll, proc2; bias)
+posrate(lll::LogitLogLink, proc2) = exp(proc2)
+posrate(lll::LogitLogLink, proc1, proc2) = posrate(lll, proc2)
 
 """
     PoissonLink <: AbstractZeroInflatedLink
@@ -64,7 +58,7 @@ p(y > 0) = 1 - exp(-a exp(n))
 
 𝔼[y ∣ y > 0] = exp(n) exp(w) / p(y > 0)
 
-where a is an optional offset (e.g. area swept) and b is an optional bias term.
+where a is an optional offset (e.g. area swept).
 
 Encounter probability uses the complementary log-log link. This link
 approximates a compound Poisson-gamma (Tweedie with 1 < p < 2) distribution.
@@ -85,16 +79,9 @@ function PoissonLink()
     PoissonLink(one(Int))
 end
 
-
-function encprob(pl::PoissonLink, logn)
-    ccdf(Poisson(pl.offset * exp(logn)), 0)
-end
-function encprob(pl::PoissonLink, logn, logw)
-    encprob(pl, logn)
-end
-function posrate(pl::PoissonLink, logn::T, logw::T; bias = zero(T)) where T
-    exp(logn + logw) / encprob(pl, logn) - bias
-end
+encprob(pl::PoissonLink, logn) = ccdf(Poisson(pl.offset * exp(logn)), 0)
+encprob(pl::PoissonLink, logn, logw) = encprob(pl, logn)
+posrate(pl::PoissonLink, logn, logw) = exp(logn + logw) / encprob(pl, logn)
 
 """
     IdentityLink <: AbstractZeroInflatedLink
@@ -109,10 +96,8 @@ function encprob(il::IdentityLink, proc1)
     proc1
 end
 encprob(il::IdentityLink, proc1, proc2) = encprob(il, proc1)
-posrate(il::IdentityLink, proc2::T; bias = zero(T)) where T = proc2 - bias
-function posrate(il::IdentityLink, proc1::T, proc2::T; bias = zero(T)) where T
-    posrate(il, proc2; bias)
-end
+posrate(il::IdentityLink, proc2) = proc2
+posrate(il::IdentityLink, proc1, proc2) = posrate(il, proc2)
 
 abstract type AbstractZeroInflatedLikelihood end
 
@@ -165,8 +150,8 @@ function ZeroInflatedLikelihood(
     else
         bias = zero(disp)
     end
-    r = posrate(zil, p1, p2; bias)
-    ZeroInflatedLikelihood(Bernoulli(p), posdist(r, disp))
+    r = posrate(zil, p1, p2)
+    ZeroInflatedLikelihood(Bernoulli(p), posdist(log(r) - bias, disp))
 end
 
 function ZeroInflatedLikelihood(
