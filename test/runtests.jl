@@ -62,4 +62,11 @@ using Test
         @test loglikelihood(zil, 1) == logpdf(LogNormal(0.0, 1.0), 1) + log(0.5)
     end
 
+    @testset "Random zero-inflated data generation" begin
+        n = 1_000
+        zil = ZeroInflatedLikelihood(Bernoulli(0.5), LogNormal(-1/2, 1.0))
+        x = rand(zil, n)
+        @test any(x .== 0)
+        @test all(x .≥ 0)
+    end
 end

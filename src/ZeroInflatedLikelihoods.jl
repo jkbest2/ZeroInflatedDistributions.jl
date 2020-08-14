@@ -99,10 +99,8 @@ encprob(il::IdentityLink, proc1, proc2) = encprob(il, proc1)
 posrate(il::IdentityLink, proc2) = proc2
 posrate(il::IdentityLink, proc1, proc2) = posrate(il, proc2)
 
-abstract type AbstractZeroInflatedLikelihood end
-
 """
-    ZeroInflatedLikelihood{Te, Tp} <: AbstractZeroInflatedLikelihood
+    ZeroInflatedLikelihood{Te, Tp} <: Distributions.Sampleable{Univariate,Continuous}
 
 Inner constructor:
     - encdist::Bernoulli : Bernoulli distribution with probability of encounter
@@ -129,8 +127,12 @@ distributions:
     - Gamma
     - InverseGamma
     - InverseGaussian
+
+The dispersion parameter is the usual standard deviation on the log scale for
+log-normal, standard deviation for the gamma and inverse gamma, and the shape
+parameter for the inverse Gaussian distribution.
 """
-struct ZeroInflatedLikelihood{Te, Tp} <: AbstractZeroInflatedLikelihood
+struct ZeroInflatedLikelihood{Te, Tp} <: Distributions.Sampleable{Univariate,Continuous}
     encdist::Te
     posdist::Tp
 
@@ -195,11 +197,9 @@ function Distributions.loglikelihood(zil::ZeroInflatedLikelihood, obs)
     loglik
 end
 
-# FIXME Better to define two samplers? One the multiplies like this and one that
-# branches to only generate a positive if there is an encounter?
-function Base.rand(rng::Random.AbstractRNG, zil::ZeroInflatedLikelihood)
+function Base.rand(rng::AbstractRNG, zil::ZeroInflatedLikelihood)
     rand(rng, zil.encdist) * rand(rng, zil.posdist)
 end
-Base.rand(zil::ZeroInflatedLikelihood) = rand(Random._GLOBAL_RNG, zil)
+Base.rand(zil::ZeroInflatedLikelihood) = rand(Random.GLOBAL_RNG, zil)
 
 end # module
