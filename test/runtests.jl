@@ -31,40 +31,40 @@ using Test
         ll = LogitLogLink()
         pl = PoissonLink()
         # Test inner constructor
-        zil0 = ZeroInflatedLikelihood(Bernoulli(0.5), LogNormal(0.0, 1.0))
+        zil0 = ZeroInflatedDistribution(Bernoulli(0.5), LogNormal(0.0, 1.0))
         @test loglikelihood(zil0, 0) == log(0.5)
         @test loglikelihood(zil0, 1) == logpdf(LogNormal(0.0, 1.0), 1) + log(0.5)
 
         # Without bias correction, posrate is the median of the log-normal
-        zil1 = ZeroInflatedLikelihood(ll, LogNormal, p1, p2, disp; biascorrect = false)
+        zil1 = ZeroInflatedDistribution(ll, LogNormal, p1, p2, disp; biascorrect = false)
         @test median(zil1.posdist) == posrate(ll, p1, p2)
 
         # With bias correction (default) it is the mean
-        zil2 = ZeroInflatedLikelihood(ll, LogNormal, p1, p2, disp)
+        zil2 = ZeroInflatedDistribution(ll, LogNormal, p1, p2, disp)
         @test mean(zil2.posdist) == posrate(ll, p1, p2)
 
-        zil3 = ZeroInflatedLikelihood(pl, Gamma, p1, p2, disp)
+        zil3 = ZeroInflatedDistribution(pl, Gamma, p1, p2, disp)
         @test mean(zil3.posdist) == posrate(pl, p1, p2)
         @test std(zil3.posdist) == disp
 
-        zil4 = ZeroInflatedLikelihood(pl, InverseGamma, p1, p2, disp)
+        zil4 = ZeroInflatedDistribution(pl, InverseGamma, p1, p2, disp)
         @test mean(zil4.posdist) == posrate(pl, p1, p2)
         @test std(zil4.posdist) == disp
 
-        zil5 = ZeroInflatedLikelihood(pl, InverseGaussian, p1, p2, disp)
+        zil5 = ZeroInflatedDistribution(pl, InverseGaussian, p1, p2, disp)
         @test mean(zil5.posdist) == posrate(pl, p1, p2)
         @test shape(zil5.posdist) == disp
     end
 
     @testset "Zero-inflated log-likelihoods" begin
-        zil = ZeroInflatedLikelihood(Bernoulli(0.5), LogNormal(0.0, 1.0))
+        zil = ZeroInflatedDistribution(Bernoulli(0.5), LogNormal(0.0, 1.0))
         @test loglikelihood(zil, 0) == log(0.5)
         @test loglikelihood(zil, 1) == logpdf(LogNormal(0.0, 1.0), 1) + log(0.5)
     end
 
     @testset "Random zero-inflated data generation" begin
         n = 1_000
-        zil = ZeroInflatedLikelihood(Bernoulli(0.5), LogNormal(-1/2, 1.0))
+        zil = ZeroInflatedDistribution(Bernoulli(0.5), LogNormal(-1/2, 1.0))
         x = rand(zil, n)
         @test any(x .== 0)
         @test all(x .≥ 0)
