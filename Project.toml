@@ -1,7 +1,7 @@
 name = "ZeroInflatedDistributions"
 uuid = "799edfa2-b1a3-4e1c-96c0-d1ebdffd3208"
 authors = ["John Best <jkbest@gmail.com> and contributors"]
-version = "0.2.0"
+version = "0.1.0"
 
 [deps]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
