@@ -88,7 +88,7 @@ function ZeroInflatedDistribution(
     ZeroInflatedDistribution(Bernoulli(p), posdist(mu, disp))
 end
 
-# Density and log-likelihood functions: pdf, logpdf, loglikelihood
+# Density and log-likelihood functions: pdf, logpdf
 function Distributions.pdf(zil::ZeroInflatedDistribution, obs)
     dens = pdf(zil.encdist, obs ≠ 0)
     if obs ≠ 0
@@ -102,13 +102,6 @@ function Distributions.logpdf(zil::ZeroInflatedDistribution, obs)
         logdens += logpdf(zil.posdist, obs)
     end
     logdens
-end
-function Distributions.loglikelihood(zil::ZeroInflatedDistribution, obs)
-    loglik = logpdf(zil.encdist, obs ≠ 0)
-    if obs ≠ 0
-        loglik += logpdf(zil.posdist, obs)
-    end
-    loglik
 end
 
 # CDF functions: cdf
