@@ -88,7 +88,7 @@ function ZeroInflatedDistribution(
     ZeroInflatedDistribution(Bernoulli(p), posdist(mu, disp))
 end
 
-# Density and log-likelihood functions: pdf, logpdf
+# Density functions: pdf, logpdf
 function Distributions.pdf(zil::ZeroInflatedDistribution, obs)
     dens = pdf(zil.encdist, obs ≠ 0)
     if obs ≠ 0
@@ -140,7 +140,7 @@ function Distributions.insupport(zil::ZeroInflatedDistribution, x)
     minimum(zil) ≤ x ≤ maximum(zil)
 end
 
-# Statistics: mean, var, modes, mode, skewness, kurtosis, entropy, mgf, cf
+# Statistics: mean, var, std, modes
 function Statistics.mean(zil::ZeroInflatedDistribution)
     succprob(zil.encdist) * mean(zil.posdist)
 end
@@ -151,7 +151,6 @@ function Statistics.var(zil::ZeroInflatedDistribution)
     ppos * (varpos + meanpos^2) - (ppos * meanpos)^2
 end
 Statistics.std(zil::ZeroInflatedDistribution) = sqrt(var(zil))
-# Consider handling this
 Distributions.modes(zil::ZeroInflatedDistribution) = (zero(eltype(zil.encdist)), mode(zil.posdist))
 
 # Facilities for random number generation

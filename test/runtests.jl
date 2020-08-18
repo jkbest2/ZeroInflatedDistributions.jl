@@ -58,7 +58,7 @@ using Test
         @test shape(zil5.posdist) == disp
     end
 
-    @testset "Zero-inflated log-likelihoods" begin
+    @testset "Zero-inflated log-pdfs" begin
         zil = ZeroInflatedDistribution(Bernoulli(0.5), LogNormal(0.0, 1.0))
         @test logpdf(zil, 0) == log(0.5)
         @test logpdf(zil, 1) == logpdf(LogNormal(0.0, 1.0), 1) + log(0.5)
