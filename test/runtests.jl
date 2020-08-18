@@ -1,10 +1,10 @@
-using ZeroInflatedLikelihoods
+using ZeroInflatedDistributions
 using Distributions
 using QuadGK
 using Random
 using Test
 
-@testset "ZeroInflatedLikelihoods.jl" begin
+@testset "ZeroInflatedDistributions.jl" begin
     @testset "Link functions" begin
         p1 = 0
         p2 = 1
@@ -26,7 +26,7 @@ using Test
         @test posrate(il, 1.0) == 1
     end
 
-    @testset "Zero-inflated likelihood constructors" begin
+    @testset "Zero-inflated distribution constructors" begin
         p1 = 0
         p2 = 1
         disp = 0.5
@@ -34,8 +34,8 @@ using Test
         pl = PoissonLink()
         # Test inner constructor
         zil0 = ZeroInflatedDistribution(Bernoulli(0.5), LogNormal(0.0, 1.0))
-        @test loglikelihood(zil0, 0) == log(0.5)
-        @test loglikelihood(zil0, 1) == logpdf(LogNormal(0.0, 1.0), 1) + log(0.5)
+        @test logpdf(zil0, 0) == log(0.5)
+        @test logpdf(zil0, 1) == logpdf(LogNormal(0.0, 1.0), 1) + log(0.5)
 
         # Without bias correction, posrate is the median of the log-normal
         zil1 = ZeroInflatedDistribution(ll, LogNormal, p1, p2, disp; biascorrect = false)
@@ -60,8 +60,8 @@ using Test
 
     @testset "Zero-inflated log-likelihoods" begin
         zil = ZeroInflatedDistribution(Bernoulli(0.5), LogNormal(0.0, 1.0))
-        @test loglikelihood(zil, 0) == log(0.5)
-        @test loglikelihood(zil, 1) == logpdf(LogNormal(0.0, 1.0), 1) + log(0.5)
+        @test logpdf(zil, 0) == log(0.5)
+        @test logpdf(zil, 1) == logpdf(LogNormal(0.0, 1.0), 1) + log(0.5)
     end
 
     @testset "Random zero-inflated data generation" begin

@@ -17,7 +17,7 @@ Outer constructor:
     - biascorrect::Bool : For log-normal positive observations, parameterize by
         the mean rather than the median
 
-A likelihood with positive probability of a zero observation as well as a
+A distribution with positive probability of a zero observation as well as a
 continuous response. Generally determined by two processes and a relevant link
 function. Outer constructors are currently implemented for the following
 distributions:

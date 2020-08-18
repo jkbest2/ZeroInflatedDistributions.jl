@@ -1,4 +1,4 @@
-module ZeroInflatedLikelihoods
+module ZeroInflatedDistributions
 
 using Random
 using Statistics

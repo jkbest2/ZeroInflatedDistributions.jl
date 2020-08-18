@@ -1,12 +1,12 @@
 ```@meta
-CurrentModule = ZeroInflatedLikelihoods
+CurrentModule = ZeroInflatedDistributions
 ```
 
-# ZeroInflatedLikelihoods
+# ZeroInflatedDistributions
 
 ```@index
 ```
 
 ```@autodocs
-Modules = [ZeroInflatedLikelihoods]
+Modules = [ZeroInflatedDistributions]
 ```

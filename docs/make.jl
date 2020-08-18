@@ -1,14 +1,14 @@
-using ZeroInflatedLikelihoods
+using ZeroInflatedDistributions
 using Documenter
 
 makedocs(;
-    modules=[ZeroInflatedLikelihoods],
+    modules=[ZeroInflatedDistributions],
     authors="John Best <jkbest@gmail.com> and contributors",
-    repo="https://github.com/jkbest2/ZeroInflatedLikelihoods.jl/blob/{commit}{path}#L{line}",
-    sitename="ZeroInflatedLikelihoods.jl",
+    repo="https://github.com/jkbest2/ZeroInflatedDistributions.jl/blob/{commit}{path}#L{line}",
+    sitename="ZeroInflatedDistributions.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://jkbest2.github.io/ZeroInflatedLikelihoods.jl",
+        canonical="https://jkbest2.github.io/ZeroInflatedDistributions.jl",
         assets=String[],
     ),
     pages=[
@@ -17,5 +17,5 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/jkbest2/ZeroInflatedLikelihoods.jl",
+    repo="github.com/jkbest2/ZeroInflatedDistributions.jl",
 )
