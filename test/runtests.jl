@@ -73,15 +73,15 @@ using Test
     end
 
     @testset "Zero-inflated distribution statistics" begin
-        zil = ZeroInflatedDistribution(Bernoulli(0.25), LogNormal(-1/2, 1.0))
+        zil = ZeroInflatedDistribution(Bernoulli(0.75), LogNormal(-1/2, 1.0))
         zil0 = ZeroInflatedDistribution(Bernoulli(0), LogNormal(-1/2, 1.0))
         zil1 = ZeroInflatedDistribution(Bernoulli(1), LogNormal(-1/2, 1.0))
-        zilgam = ZeroInflatedDistribution(Bernoulli(0.15), Gamma(2, 4))
+        zilgam = ZeroInflatedDistribution(Bernoulli(0.85), Gamma(2, 4))
 
         @testset "Zero-inflated distribution supports" begin
             @test !insupport(zil, -1)
-            @test all(minimum.([zil, zil0, zil1]) .== 0)
-            @test all(maximum.([zil, zil0, zil1]) .== Inf)
+            @test all(minimum.([zil, zil0, zil1, zilgam]) .== 0)
+            @test all(maximum.([zil, zil0, zil1, zilgam]) .== Inf)
         end
 
 
@@ -96,7 +96,7 @@ using Test
             sd = std(zil) / sqrt(n)
             sd1 = std(zil1) / sqrt(n)
 
-            @test isapprox(mean(x), 0.25, atol = 2 * sd)
+            @test isapprox(mean(x), 0.75, atol = 2 * sd)
             @test all(x0 .== 0)
             @test isapprox(mean(x1), 1, atol = 2 * sd1)
 
@@ -120,6 +120,33 @@ using Test
             @test isapprox(quadvar, var(zil), atol = quadex2[2])
             @test isapprox(quadexgam[1], mean(zilgam), atol = quadexgam[2])
             @test isapprox(quadvargam, var(zilgam), atol = quadexgam2[2])
+        end
+
+        @testset "Test CDF function" begin
+            @test cdf(zil, 0) == failprob(zil.encdist)
+            @test cdf(zil0, 0) == 1
+            @test cdf(zil1, 2) == cdf(zil1.posdist, 2)
+            @test cdf(zilgam, 10) ==
+                failprob(zilgam.encdist) +
+                cdf(zilgam.posdist, 10) * succprob(zilgam.encdist)
+        end
+
+        @testset "Test quantile function" begin
+            @test quantile(zil, 0.2) == 0
+            @test quantile(zilgam, 0.1) == 0
+            @test quantile(zil, 0.5) ==
+                quantile(zil.posdist,
+                         (0.5 - failprob(zil.encdist)) / succprob(zil.encdist))
+            @test quantile(zil1, 0.9) == quantile(zil1.posdist, 0.9)
+            @test quantile(zilgam, 0.75) ==
+                quantile(zilgam.posdist,
+                         (0.75 - failprob(zilgam.encdist)) /
+                         succprob(zilgam.encdist))
+        end
+
+        @testset "Test modes function" begin
+            @test all(modes(zil) .== [0, mode(LogNormal(-0.5, 1))])
+            @test all(modes(zilgam) .== [0, mode(Gamma(2, 4))])
         end
     end
 end

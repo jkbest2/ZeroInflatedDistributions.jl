@@ -119,7 +119,7 @@ end
 # Quantile functions: quantile
 function Distributions.quantile(zil::ZeroInflatedDistribution, p)
     p0 = failprob(zil.encdist)
-    if obs ≤ p0
+    if p ≤ p0
         q = zero(p)
     else
         p2 = (p - p0) / succprob(zil.encdist)
