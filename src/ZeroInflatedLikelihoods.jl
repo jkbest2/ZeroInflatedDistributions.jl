@@ -1,8 +1,10 @@
 module ZeroInflatedLikelihoods
 
+using Random
+using Statistics
+
 using Distributions
 using StatsFuns
-using Random
 
 export AbstractZeroInflatedLink,
     LogitLogLink,

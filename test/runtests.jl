@@ -1,5 +1,7 @@
 using ZeroInflatedLikelihoods
 using Distributions
+using QuadGK
+using Random
 using Test
 
 @testset "ZeroInflatedLikelihoods.jl" begin
@@ -68,5 +70,56 @@ using Test
         x = rand(zil, n)
         @test any(x .== 0)
         @test all(x .≥ 0)
+    end
+
+    @testset "Zero-inflated distribution statistics" begin
+        zil = ZeroInflatedDistribution(Bernoulli(0.25), LogNormal(-1/2, 1.0))
+        zil0 = ZeroInflatedDistribution(Bernoulli(0), LogNormal(-1/2, 1.0))
+        zil1 = ZeroInflatedDistribution(Bernoulli(1), LogNormal(-1/2, 1.0))
+        zilgam = ZeroInflatedDistribution(Bernoulli(0.15), Gamma(2, 4))
+
+        @testset "Zero-inflated distribution supports" begin
+            @test !insupport(zil, -1)
+            @test all(minimum.([zil, zil0, zil1]) .== 0)
+            @test all(maximum.([zil, zil0, zil1]) .== Inf)
+        end
+
+
+        @testset "Test means and variances via simulation" begin
+            Random.seed!(13579)
+            n = 10_000
+
+            x = rand(zil, n)
+            x0 = rand(zil0, n)
+            x1 = rand(zil1, n)
+
+            sd = std(zil) / sqrt(n)
+            sd1 = std(zil1) / sqrt(n)
+
+            @test isapprox(mean(x), 0.25, atol = 2 * sd)
+            @test all(x0 .== 0)
+            @test isapprox(mean(x1), 1, atol = 2 * sd1)
+
+            # @test isapprox(var(zil), var(x))
+            @test var(zil0) == 0
+            @test var(zil1) == var(zil1.posdist)
+        end
+
+        @testset "Test means and variances via quadrature" begin
+            # 𝔼[X]
+            quadex = quadgk(x -> x * pdf(zil, x), 0, Inf)
+            quadexgam = quadgk(x -> x * pdf(zilgam, x), 0, Inf)
+            # 𝔼[X²]
+            quadex2 = quadgk(x -> x^2 * pdf(zil, x), 0, Inf)
+            quadexgam2 = quadgk(x -> x^2 * pdf(zilgam, x), 0, Inf)
+            # 𝕍[X] = 𝔼[X^2] - 𝔼[X]^2
+            quadvar = quadex2[1] - mean(zil)^2
+            quadvargam = quadexgam2[1] - mean(zilgam)^2
+
+            @test isapprox(quadex[1], mean(zil), atol = quadex[2])
+            @test isapprox(quadvar, var(zil), atol = quadex2[2])
+            @test isapprox(quadexgam[1], mean(zilgam), atol = quadexgam[2])
+            @test isapprox(quadvargam, var(zilgam), atol = quadexgam2[2])
+        end
     end
 end

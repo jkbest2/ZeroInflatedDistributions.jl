@@ -88,6 +88,21 @@ function ZeroInflatedDistribution(
     ZeroInflatedDistribution(Bernoulli(p), posdist(mu, disp))
 end
 
+# Density and log-likelihood functions: pdf, logpdf, loglikelihood
+function Distributions.pdf(zil::ZeroInflatedDistribution, obs)
+    dens = pdf(zil.encdist, obs ≠ 0)
+    if obs ≠ 0
+        dens *= pdf(zil.posdist, obs)
+    end
+    dens
+end
+function Distributions.logpdf(zil::ZeroInflatedDistribution, obs)
+    logdens = logpdf(zil.encdist, obs ≠ 0)
+    if obs ≠ 0
+        logdens += logpdf(zil.posdist, obs)
+    end
+    logdens
+end
 function Distributions.loglikelihood(zil::ZeroInflatedDistribution, obs)
     loglik = logpdf(zil.encdist, obs ≠ 0)
     if obs ≠ 0
@@ -96,6 +111,57 @@ function Distributions.loglikelihood(zil::ZeroInflatedDistribution, obs)
     loglik
 end
 
+# CDF functions: cdf
+function Distributions.cdf(zil::ZeroInflatedDistribution, obs)
+    # Zero has positive probability
+    cum = failprob(zil.encdist)
+    if obs > 0
+        # Then add CDF of positive distribution rescaled to probability of
+        # encounter
+        cum += cdf(zil.posdist, obs) * succprob(zil.encdist)
+    end
+    cum
+end
+
+# Quantile functions: quantile
+function Distributions.quantile(zil::ZeroInflatedDistribution, p)
+    p0 = failprob(zil.encdist)
+    if obs ≤ p0
+        q = zero(p)
+    else
+        p2 = (p - p0) / succprob(zil.encdist)
+        q = quantile(zil.posdist, p2)
+    end
+    q
+end
+
+# FIXME Consider handline Bernoulli(0), Bernoulli(1) corner cases
+# Support functions: minimum, maximum, insupport
+function Base.minimum(zil::ZeroInflatedDistribution)
+    min(minimum(zil.encdist), minimum(zil.posdist))
+end
+function Base.maximum(zil::ZeroInflatedDistribution)
+    max(maximum(zil.encdist), maximum(zil.posdist))
+end
+function Distributions.insupport(zil::ZeroInflatedDistribution, x)
+    minimum(zil) ≤ x ≤ maximum(zil)
+end
+
+# Statistics: mean, var, modes, mode, skewness, kurtosis, entropy, mgf, cf
+function Statistics.mean(zil::ZeroInflatedDistribution)
+    succprob(zil.encdist) * mean(zil.posdist)
+end
+function Statistics.var(zil::ZeroInflatedDistribution)
+    ppos = succprob(zil.encdist)
+    varpos = var(zil.posdist)
+    meanpos = mean(zil.posdist)
+    ppos * (varpos + meanpos^2) - (ppos * meanpos)^2
+end
+Statistics.std(zil::ZeroInflatedDistribution) = sqrt(var(zil))
+# Consider handling this
+Distributions.modes(zil::ZeroInflatedDistribution) = (zero(eltype(zil.encdist)), mode(zil.posdist))
+
+# Facilities for random number generation
 function Base.rand(rng::AbstractRNG, zil::ZeroInflatedDistribution)
     rand(rng, zil.encdist) * rand(rng, zil.posdist)
 end
